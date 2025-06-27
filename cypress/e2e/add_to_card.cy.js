@@ -1,38 +1,38 @@
-describe('Add to card', ()=> {
-    beforeEach(()=> {
-        //Visiter le site + se connecter
-        cy.visit('http://www.saucedemo.com');
-        cy.get('#user-name').type('standard_user');
-        cy.get('#password').type('secret_sauce');
-        cy.get('#login-button').click();
-    })
+import { cartPage, inventoryPage } from "../support/selectors";
 
-    
+describe('E-commerce - Add to Cart Flow', () => {
+  let user;
 
+  before(() => {
+    cy.fixture('users').then((data) => {
+      user = data.standardUser;
+    });
+  });
 
-it('adds a product to the cart and checks the badge', () => {
-    //Verifie que la redirection vers la page produits est faite 
-    cy.url().should('include','/inventory');
-    //Ajoute le premier produit au panier
-    cy.get('.inventory_item').first().find('button').click();
+  beforeEach(() => {
+    cy.login(user);
+  });
 
-    //Verifie que le badge au panier affiche 1
-    cy.get('.shopping_cart_badge').should('contain','1');
-});
+  it('should add a product to the cart and display correct badge count', () => {
+    cy.url().should('include', '/inventory');
 
-it('navigates to the cart and confirms product presence', () => {
-    //Ajout un produit 
-    cy.get('.inventory_item').eq(1).find('button').click();
+    cy.get(inventoryPage.inventoryItem)
+      .first()
+      .find('button')
+      .click();
 
-    //cliquer sur l'icone du panier
-    cy.get('.shopping_cart_link').click();
+    cy.get(inventoryPage.cartBadge).should('contain', '1');
+  });
 
-    //Verifie qu'on est bien sur la page du panier
-    cy.url().should('include','/cart');
+  it('should navigate to cart and confirm product presence', () => {
+    cy.get(inventoryPage.inventoryItem)
+      .eq(1)
+      .find('button')
+      .click();
 
+    cy.get(inventoryPage.cartLink).click();
+    cy.url().should('include', '/cart');
 
-    // Vérifie qu’un produit est bien présent dans le panier
-    cy.get('.cart_item').should('have.length.at.least', 1);
-  
-})
+    cy.get(cartPage.cartItem).should('have.length.at.least', 1);
+  });
 });
